@@ -5,8 +5,8 @@ venv/
 __pycache__/
 
 # קבצים בינאריים
-*.pkl
-*.xlsx
+#*.pkl
+#*.xlsx
 
 # הגדרות IDE (כמו PyCharm)
 .idea/
