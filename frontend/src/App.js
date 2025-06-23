@@ -10,7 +10,9 @@ import MatchSearchForm from './components/MatchSearchForm';
 import MatchesPage from './components/MatchesPage';
 import HistoryPage from './components/HistoryPage';
 import ProtectedRoute from './components/ProtectedRoute';
-import LoginForm from './components/LoginForm';
+import BoyProfile from "./components/BoyProfile";
+
+
 
 function App() {
   const [user, setUser] = useState(null);
@@ -34,6 +36,7 @@ function App() {
             <DashboardPage user={user} setUser={setUser} />
           </ProtectedRoute>
         } />
+        <Route path="/boys/:index" element={<BoyProfile />} />
         <Route path="/users/login" element={<HomePage setUser={setUser} />} />
         <Route path="/users/register" element={<RegisterForm />} />
         <Route path="/boys" element={<BoysTable />} />

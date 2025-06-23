@@ -38,6 +38,8 @@ def get_matches_for_boy(boy_index):
         print("❌ שגיאה בזמן עיבוד הבקשה:")
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
+
+
 @app.route("/api/history", methods=["GET"])
 def get_successful_matches():
     try:
@@ -91,32 +93,89 @@ def get_all_girls():
         print("❌ שגיאה בשליפת רשימת הבנות:")
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
+# ✅ קבלת כל ה-JSON של בחור לפי אינדקס
+@app.route("/api/boy/<int:boy_index>", methods=["GET"])
+def get_boy_full_data(boy_index):
+    try:
+        if boy_index < 0 or boy_index >= len(boys_data):
+            return jsonify({"error": "Index out of range"}), 400
+
+        boy = boys_data[boy_index].copy()
+
+        # שליפת כל הבנות מהמונגו
+        girls = list(db["shiduchim_banot"].find())
+        girl_dict = {girl.get("recordId"): girl for girl in girls}
+
+        # הוספת שם הבחורה לכל הצעה
+        for proposal in boy.get("proposals", []):
+            girl = girl_dict.get(proposal.get("targetRecordId"))
+            if girl:
+                first_name = girl.get("studentInfo", {}).get("firstName", "")
+                last_name = girl.get("studentInfo", {}).get("lastName", "")
+                proposal["girlName"] = f"{first_name} {last_name}"
+
+        return jsonify(convert_objectid(boy))
+
+    except Exception as e:
+        print("❌ שגיאה בשליפת פרטי הבחור:")
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
 
 # ✅ קבלת רשימת כל הבחורים עם אינדקסים
-@app.route("/api/boys", methods=["GET"])
+
+# @app.route("/api/boys", methods=["GET"])
+# def get_all_boys():
+#     try:
+#         boys_list = []
+#         for i, boy in enumerate(boys_data):
+#             name = boy.get("studentInfo", {}).get("firstName", "") + " " + boy.get("studentInfo", {}).get("lastName",
+#                                                                                                           "")
+#
+#             proposals = boy.get("proposals", [])
+#             is_matched = any(p.get("status") == "success" for p in proposals)
+#             status = "שודך" if is_matched else "פנוי"
+#
+#             boys_list.append({
+#                 "index": i,
+#                 "name": name,
+#                 "status": status
+#             })
+#         return jsonify(boys_list)
+#
+#     except Exception as e:
+#         print("❌ שגיאה בשליפת רשימת הבחורים:")
+#         traceback.print_exc()
+#         return jsonify({"error": str(e)}), 500
+
+# ממיר ObjectId לכל מחרוזת בתוך JSON מורכב
+def convert_objectid(obj):
+    if isinstance(obj, list):
+        return [convert_objectid(item) for item in obj]
+    elif isinstance(obj, dict):
+        return {k: convert_objectid(v) for k, v in obj.items()}
+    elif isinstance(obj, ObjectId):
+        return str(obj)
+    else:
+        return obj
+
 @app.route("/api/boys", methods=["GET"])
 def get_all_boys():
     try:
         boys_list = []
+
         for i, boy in enumerate(boys_data):
-            name = boy.get("studentInfo", {}).get("firstName", "") + " " + boy.get("studentInfo", {}).get("lastName",
-                                                                                                          "")
+            boy_copy = boy.copy()
+            boy_copy["index"] = i
+            boys_list.append(convert_objectid(boy_copy))
 
-            proposals = boy.get("proposals", [])
-            is_matched = any(p.get("status") == "success" for p in proposals)
-            status = "שודך" if is_matched else "פנוי"
-
-            boys_list.append({
-                "index": i,
-                "name": name,
-                "status": status
-            })
         return jsonify(boys_list)
 
     except Exception as e:
         print("❌ שגיאה בשליפת רשימת הבחורים:")
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
+
 
 # 🔐 התחברות לפי אימייל וסיסמה
 @app.route("/api/users/login", methods=["POST", "OPTIONS"])
