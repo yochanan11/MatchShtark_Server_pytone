@@ -4,12 +4,12 @@ import LoginForm from "./LoginForm";
 import RegisterLink from "./RegisterLink";
 import Footer from "./Footer";
 
-function HomePage() {
+function HomePage({ setUser }) {
     return (
         <div>
             <div className="container text-center mt-5">
                 <LogoSection />
-                <LoginForm />
+                <LoginForm setUser={setUser} />
                 <RegisterLink />
                 <Footer />
             </div>

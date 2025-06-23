@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-function LoginForm() {
+function LoginForm({ setUser }) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [message, setMessage] = useState("");
-    const navigate = useNavigate(); // ⬅️ מאפשר ניווט לאחר התחברות
+    const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -22,9 +22,10 @@ function LoginForm() {
             const data = await res.json();
 
             if (data.success) {
-                // ⬅️ התחברות הצליחה, שמירת משתמש והעברה לדף הבית
+                // ⬅️ שמירה ב-localStorage ועדכון ה-state הגלובלי
                 localStorage.setItem("user", JSON.stringify(data.user));
-                navigate("/dashboard"); // ⬅️ מעבר לדף הבית
+                setUser(data.user); // ⬅️ זה מה שהיה חסר
+                navigate("/dashboard");
             } else {
                 setMessage(data.message || "שגיאה בהתחברות");
             }
@@ -34,8 +35,9 @@ function LoginForm() {
     };
 
     return (
-        <div className="card mx-auto" style={{ maxWidth: "400px" }}>
+        <div className="card mx-auto mt-5" style={{ maxWidth: "400px" }} dir="rtl">
             <div className="card-body">
+                <h4 className="text-center mb-4">התחברות למערכת</h4>
                 <form onSubmit={handleSubmit}>
                     <div className="mb-3">
                         <label htmlFor="email" className="form-label">אימייל</label>
@@ -59,7 +61,7 @@ function LoginForm() {
                             required
                         />
                     </div>
-                    <input type="submit" className="btn btn-primary" value="כניסה" />
+                    <input type="submit" className="btn btn-primary w-100" value="כניסה" />
                 </form>
 
                 {message && <div className="alert alert-warning mt-3">{message}</div>}

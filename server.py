@@ -7,7 +7,7 @@ import bcrypt
 from flask import request
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 model = load_model()
 
 users_collection = db["user"]
@@ -37,6 +37,33 @@ def get_matches_for_boy(boy_index):
     except Exception as e:
         print("❌ שגיאה בזמן עיבוד הבקשה:")
         traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+@app.route("/api/history", methods=["GET"])
+def get_successful_matches():
+    try:
+        boys = list(db["shiduchim_banim"].find())
+        girls = list(db["shiduchim_banot"].find())
+
+        girl_dict = {girl.get("recordId"): girl for girl in girls}
+
+        history = []
+
+        for boy in boys:
+            boy_name = boy.get("studentInfo", {}).get("firstName", "") + " " + boy.get("studentInfo", {}).get("lastName", "")
+            for proposal in boy.get("proposals", []):
+                if proposal.get("status") == "success":
+                    girl = girl_dict.get(proposal.get("targetRecordId"))
+                    if girl:
+                        girl_name = girl.get("studentInfo", {}).get("firstName", "") + " " + girl.get("studentInfo", {}).get("lastName", "")
+                        history.append({
+                            "boyName": boy_name,
+                            "girlName": girl_name,
+                            "reason": proposal.get("reason", "")
+                        })
+
+        return jsonify(history)
+
+    except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 @app.route("/api/girls", methods=["GET"])

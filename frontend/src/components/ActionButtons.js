@@ -1,6 +1,15 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
-function ActionButtons() {
+function ActionButtons({ setUser }) {
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        localStorage.removeItem("user");
+        setUser(null); // ⬅️ עדכון ה־state הגלובלי
+        navigate("/users/login"); // ⬅️ ניווט חלק ללא ריענון
+    };
+
     return (
         <div className="row text-center mb-4">
             <div className="col">
@@ -13,7 +22,7 @@ function ActionButtons() {
                 <a href="/users/history" className="btn btn-outline-secondary">📋 היסטוריית שידוכים</a>
             </div>
             <div className="col">
-                <a href="/users/logout" className="btn btn-outline-secondary">להתנתק</a>
+                <button onClick={handleLogout} className="btn btn-outline-danger">🚪 התנתק</button>
             </div>
         </div>
     );
