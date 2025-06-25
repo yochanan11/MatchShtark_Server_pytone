@@ -7,7 +7,7 @@ import bcrypt
 from flask import request
 
 app = Flask(__name__)
-CORS(app, resources={r"/api/*": {"origins": "*"}})
+CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
 model = load_model()
 
 users_collection = db["user"]
@@ -71,7 +71,7 @@ def get_successful_matches():
 @app.route("/api/girls", methods=["GET"])
 def get_all_girls():
     try:
-        girls_raw = list(db["shiduchim_banot"].find({"status": {"$ne": "engaged"}}))
+        girls_raw = list(db["shiduchim_banot"].find())
         seen_ids = set()
         girls_list = []
 
@@ -80,12 +80,7 @@ def get_all_girls():
             if not record_id or record_id in seen_ids:
                 continue
             seen_ids.add(record_id)
-
-            girls_list.append({
-                "recordId": record_id,
-                "firstName": girl.get("studentInfo", {}).get("firstName", ""),
-                "lastName": girl.get("studentInfo", {}).get("lastName", "")
-            })
+            girls_list.append(convert_objectid(girl))  # 🟢 מחזיר את כל הגרסה
 
         return jsonify(girls_list)
 
@@ -93,6 +88,163 @@ def get_all_girls():
         print("❌ שגיאה בשליפת רשימת הבנות:")
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/boy/<int:boy_index>", methods=["PUT"])
+def update_boy(boy_index):
+    try:
+        updated_data = request.json
+        if boy_index < 0 or boy_index >= len(boys_data):
+            return jsonify({"error": "Index out of range"}), 400
+
+        db["shiduchim_banim"].update_one(
+            {"recordId": boys_data[boy_index].get("recordId")},
+            {"$set": updated_data}
+        )
+        return jsonify({"message": "עודכן בהצלחה"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/girl/<int:record_id>", methods=["PUT"])
+def update_girl(record_id):
+    try:
+        updated_data = request.json
+
+        # מחיקת _id אם קיים
+        if "_id" in updated_data:
+            del updated_data["_id"]
+
+        print("📥 נתונים לאחר הסרת _id:", updated_data)
+
+        res = db["shiduchim_banot"].update_one(
+            {"recordId": record_id},
+            {"$set": updated_data}
+        )
+
+        if res.matched_count == 0:
+            return jsonify({"error": "לא נמצאה בחורה לעדכון"}), 404
+
+        return jsonify({"message": "עודכן בהצלחה"})
+    except Exception as e:
+        print("❌ שגיאה בעדכון בחורה:")
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/retrain-model", methods=["POST"])
+def retrain_model():
+    try:
+        from Finel import train_or_load_model, X_train, y_train
+
+        print("🔁 בקשת אימון מחדש התקבלה")
+        global model
+        model = train_or_load_model(X_train, y_train, force_train=True)
+        return jsonify({"message": "המודל אומן ונשמר מחדש בהצלחה"})
+
+    except Exception as e:
+        print("❌ שגיאה באימון מחדש:")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/import/<collection>", methods=["POST"])
+def import_from_excel(collection):
+    try:
+        data = request.json.get("records", [])
+        if not isinstance(data, list):
+            return jsonify({"error": "Invalid data"}), 400
+
+        if collection == "banim":
+            db["shiduchim_banim"].insert_many(data)
+        elif collection == "banot":
+            db["shiduchim_banot"].insert_many(data)
+        else:
+            return jsonify({"error": "Invalid collection"}), 400
+
+        return jsonify({"message": "Imported successfully", "count": len(data)})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+@app.route("/api/boy", methods=["POST"])
+def add_boy():
+    try:
+        data = request.json
+        db["shiduchim_banim"].insert_one(data)
+        return jsonify({"message": "הבחור נוסף בהצלחה"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/girl", methods=["POST"])
+def add_girl():
+    try:
+        data = request.json
+        db["shiduchim_banot"].insert_one(data)
+        return jsonify({"message": "הבחורה נוספה בהצלחה"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/sync-girls-status", methods=["POST"])
+def sync_girls_status():
+    try:
+        boys = db["shiduchim_banim"].find()
+        girls = db["shiduchim_banot"]
+
+        engaged_ids = set()
+
+        for boy in boys:
+            for p in boy.get("proposals", []):
+                if p.get("status") == "success":
+                    engaged_ids.add(p.get("targetRecordId"))
+
+        updated = 0
+        for record_id in engaged_ids:
+            res = girls.update_one(
+                {"recordId": record_id},
+                {"$set": {"status": "engaged"}}
+            )
+            updated += res.modified_count
+
+        return jsonify({"message": f"{updated} בנות עודכנו כמשודכות."})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/girl/proposals/<record_id>", methods=["GET"])
+def check_if_girl_has_proposals(record_id):
+    try:
+        matched_boys = []
+
+        for boy in boys_data:
+            for proposal in boy.get("proposals", []):
+                if proposal.get("targetRecordId") == record_id:
+                    matched_boys.append({
+                        "boyName": boy.get("studentInfo", {}).get("firstName", "") + " " + boy.get("studentInfo", {}).get("lastName", ""),
+                        "status": proposal.get("status"),
+                        "reason": proposal.get("reason", "")
+                    })
+
+        return jsonify(matched_boys)
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/girl/<record_id>", methods=["GET"])
+def get_girl_by_record_id(record_id):
+    try:
+        record_id = int(record_id)  # המרה למספר שלם
+        girl = db["shiduchim_banot"].find_one({"recordId": record_id})
+        if not girl:
+            return jsonify({"error": "לא נמצאה בחורה עם מזהה זה"}), 404
+
+        return jsonify(convert_objectid(girl))  # ✅ כאן השינוי
+
+    except Exception as e:
+        print("❌ שגיאה בשליפת פרטי הבחורה:")
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+
+
 # ✅ קבלת כל ה-JSON של בחור לפי אינדקס
 @app.route("/api/boy/<int:boy_index>", methods=["GET"])
 def get_boy_full_data(boy_index):
@@ -117,7 +269,7 @@ def get_boy_full_data(boy_index):
         return jsonify(convert_objectid(boy))
 
     except Exception as e:
-        print("❌ שגיאה בשליפת פרטי הבחור:")
+        print(" שגיאה בשליפת פרטי הבחור:")
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
@@ -144,7 +296,7 @@ def get_boy_full_data(boy_index):
 #         return jsonify(boys_list)
 #
 #     except Exception as e:
-#         print("❌ שגיאה בשליפת רשימת הבחורים:")
+#         print(" שגיאה בשליפת רשימת הבחורים:")
 #         traceback.print_exc()
 #         return jsonify({"error": str(e)}), 500
 
@@ -172,7 +324,7 @@ def get_all_boys():
         return jsonify(boys_list)
 
     except Exception as e:
-        print("❌ שגיאה בשליפת רשימת הבחורים:")
+        print(" שגיאה בשליפת רשימת הבחורים:")
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
@@ -188,6 +340,7 @@ def login_user():
         data = request.json
         email = data.get("email")
         password = data.get("password")
+        phone = data.get("phone")
 
         user = db["user"].find_one({"userInfo.email": email})
         if not user:
@@ -202,7 +355,8 @@ def login_user():
                     "recordId": user["recordId"],
                     "firstName": user["userInfo"]["firstName"],
                     "lastName": user["userInfo"]["lastName"],
-                    "email": user["userInfo"]["email"]
+                    "email": user["userInfo"]["email"],
+                    "phone": user["userInfo"]["phone"]
                 }
             })
         else:
@@ -210,6 +364,44 @@ def login_user():
 
     except Exception as e:
         return jsonify({"success": False, "message": "שגיאה בשרת", "error": str(e)}), 500
+@app.route("/api/users/register", methods=["POST", "OPTIONS"])
+def register_user():
+    if request.method == "OPTIONS":
+        # טיפול בבקשת preflight
+        return jsonify({"message": "OK"}), 200
+
+    try:
+        data = request.json
+        if not data:
+            return jsonify({"error": "נתונים חסרים"}), 400
+
+        existing = users_collection.find_one({"userInfo.email": data.get("email")})
+        if existing:
+            return jsonify({"error": "האימייל כבר רשום במערכת"}), 409
+
+        password = data.get("password", "")
+        hashed_pw = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+
+        new_user = {
+            "recordId": int(users_collection.count_documents({})) + 1,
+            "userInfo": {
+                "firstName": data.get("firstName", ""),
+                "lastName": data.get("lastName", ""),
+                "email": data.get("email", ""),
+                "phone": data.get("phone", ""),
+                "password": hashed_pw
+            }
+        }
+
+        res = users_collection.insert_one(new_user)
+        return jsonify({"message": "המשתמש נרשם בהצלחה", "id": str(res.inserted_id)})
+
+    except Exception as e:
+        print("❌ שגיאה ברישום משתמש:")
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route("/api/users", methods=["GET"])
 def get_users():
     try:
@@ -226,6 +418,7 @@ def get_users():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 if __name__ == "__main__":
     print("🚀 Flask server running at http://127.0.0.1:5000")

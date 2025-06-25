@@ -1,11 +1,14 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+
+function setCookie(name, value, hours) {
+    const expires = new Date(Date.now() + hours * 60 * 60 * 1000).toUTCString();
+    document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/`;
+}
 
 function LoginForm({ setUser }) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [message, setMessage] = useState("");
-    const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -22,10 +25,9 @@ function LoginForm({ setUser }) {
             const data = await res.json();
 
             if (data.success) {
-                // ⬅️ שמירה ב-localStorage ועדכון ה-state הגלובלי
-                localStorage.setItem("user", JSON.stringify(data.user));
-                setUser(data.user); // ⬅️ זה מה שהיה חסר
-                navigate("/dashboard");
+                setCookie("user", JSON.stringify(data.user), 12); // שמור קוקי ל-12 שעות
+                setUser(data.user);
+                window.location.href = "/dashboard"; // רענון מלא למניעת בעיות
             } else {
                 setMessage(data.message || "שגיאה בהתחברות");
             }

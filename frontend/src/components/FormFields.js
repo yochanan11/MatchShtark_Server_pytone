@@ -6,11 +6,11 @@ function FormFields() {
             <div className="row">
                 <div className="col-md-6 mb-3">
                     <label htmlFor="first-name" className="form-label">שם פרטי</label>
-                    <input type="text" className="form-control" id="first-name" name="first-name" required />
+                    <input type="text" className="form-control" id="first-name" name="firstName" required />
                 </div>
                 <div className="col-md-6 mb-3">
                     <label htmlFor="last-name" className="form-label">שם משפחה</label>
-                    <input type="text" className="form-control" id="last-name" name="last-name" required />
+                    <input type="text" className="form-control" id="last-name" name="lastName" required />
                 </div>
             </div>
 
@@ -27,12 +27,12 @@ function FormFields() {
 
             <div className="row">
                 <div className="col-md-6 mb-3">
-                    <label htmlFor="password" className="form-label">סיסמא</label>
+                    <label htmlFor="password" className="form-label">סיסמה</label>
                     <input type="password" className="form-control" id="password" name="password" required />
                 </div>
                 <div className="col-md-6 mb-3">
-                    <label htmlFor="password-aging" className="form-label">אימות סיסמא</label>
-                    <input type="password" className="form-control" id="password-aging" name="password-aging" required />
+                    <label htmlFor="confirmPassword" className="form-label">אימות סיסמה</label>
+                    <input type="password" className="form-control" id="confirmPassword" name="confirmPassword" required />
                 </div>
             </div>
         </>

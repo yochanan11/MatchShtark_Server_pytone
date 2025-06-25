@@ -75,7 +75,8 @@ def predict_matches_for_boy(boy, girls, model, top_n=5):
         predictions.append({
             "Girl Name": girl.get("studentInfo", {}).get("firstName", "") + " " + girl.get("studentInfo", {}).get("lastName", ""),
             "Score": float(score),
-            "Details": cleaned_details
+            "Details": cleaned_details,
+            "targetRecordId": girl.get("recordId")
         })
 
     return sorted(predictions, key=lambda x: x["Score"], reverse=True)[:top_n]
@@ -99,45 +100,30 @@ def load_model():
 
 
 # אימון או טעינת מודל
-def train_or_load_model(X_train, y_train):
-    global best_model  # כדי שנוכל להשתמש במודל ברמה גלובלית
+def train_or_load_model(X_train=None, y_train=None, force_train=False):
+    global best_model
     best_model = load_model()
 
-    while True:
-        if best_model is None:
-            print("\n⚠ No existing trained model found. Training a new model...")
-            choice = "yes"
-        else:
-            choice = input("\nDo you want to train the model again? (yes/no): ").strip().lower()
+    if best_model is None or force_train:
+        print("\n🔁 Training the model...")
+        param_grid = {
+            'max_depth': [3, 5, 7],
+            'learning_rate': [0.01, 0.1],
+            'n_estimators': [100, 200],
+            'subsample': [0.8, 1.0]
+        }
 
-        if choice == "yes":
-            print("\nTraining the model again...")
-            param_grid = {
-                'max_depth': [3, 5, 7, 9],
-                'learning_rate': [0.01, 0.05, 0.1, 0.2],
-                'n_estimators': [100, 200, 300, 400],
-                'subsample': [0.6, 0.8, 1.0]
-            }
+        xgb_model = XGBClassifier(eval_metric="logloss", random_state=42)
+        grid_search = GridSearchCV(xgb_model, param_grid, cv=3, scoring='accuracy', verbose=2, n_jobs=-1)
+        grid_search.fit(X_train, y_train)
 
-            xgb_model = XGBClassifier(eval_metric="logloss", random_state=42)
-            grid_search = GridSearchCV(xgb_model, param_grid, cv=3, scoring='accuracy', verbose=2, n_jobs=-1)
-            grid_search.fit(X_train, y_train)
+        print("Best parameters:", grid_search.best_params_)
+        best_model = grid_search.best_estimator_
+        save_model(best_model)
+    else:
+        print("✅ Using existing trained model...")
 
-            print("Best parameters:", grid_search.best_params_)
-            best_model = grid_search.best_estimator_
-            save_model(best_model)
-            return best_model
-
-        elif choice == "no":
-            if best_model is not None:
-                print("\nUsing the last trained model...")
-                return best_model
-            else:
-                print("\n⚠ No trained model available. Training a new model...")
-                choice = "yes"  # מכריח לאמן את המודל אם אין מודל קיים
-
-        else:
-            print("Invalid input! Please type 'yes' or 'no'.")
+    return best_model
 
 
 # עיבוד נתונים
@@ -166,7 +152,6 @@ X_train, X_test, y_train, y_test = train_test_split(X_resampled, y_resampled, te
 
 # אימון המודל או טעינתו מהקובץ
 best_model = train_or_load_model(X_train, y_train)
-
 
 # פונקציה לבחירת התאמות חדשות
 def request_new_match(boys_data, girls_data, model):

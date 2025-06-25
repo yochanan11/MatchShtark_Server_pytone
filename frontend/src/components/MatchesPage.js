@@ -1,15 +1,17 @@
-import React from "react";
-import { useLocation } from "react-router-dom";
+import React, { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+
 
 function MatchesPage() {
     const { state } = useLocation();
     const { firstName, lastName, matches } = state || {};
+    const [statusUpdated, setStatusUpdated] = useState(false);
+    const navigate = useNavigate();
 
     if (!matches || !Array.isArray(matches)) {
         return <p className="text-center mt-5">לא התקבלו נתוני התאמות.</p>;
     }
 
-    // שלב 1: נבנה עותק חדש עם ציונים מעודכנים
     const adjustedMatches = matches.map((match) => {
         const originalScore = match.Score;
         const finalScore = originalScore < 0.8
@@ -22,8 +24,20 @@ function MatchesPage() {
         };
     });
 
-    // שלב 2: מיון מהגבוה לנמוך
     const sortedMatches = adjustedMatches.sort((a, b) => b.AdjustedScore - a.AdjustedScore);
+
+    const handleConfirmShiduch = async (girlName) => {
+        try {
+            // כאן שים את ה־API שלך לעדכון סטטוס
+            console.log(`💍 מאשר שידוך עם: ${girlName}`);
+            // await fetch(...)
+
+            setStatusUpdated(true);
+            alert("✅ השידוך סומן כהצלחה!");
+        } catch (err) {
+            alert("שגיאה באישור השידוך");
+        }
+    };
 
     return (
         <div className="container mt-4" dir="rtl">
@@ -37,10 +51,12 @@ function MatchesPage() {
                 {sortedMatches.map((match, idx) => (
                     <li className="match-item" key={idx}>
                         <div className="match-details">
-                            <span className="match-name">
-                                {idx === 0 ? "💍 המתאימה ביותר: " : ""}
-                                {match["Girl Name"]}
-                            </span>
+                            <div>
+                                {idx === 0 && (
+                                    <span className="badge bg-gold me-2">המתאימה ביותר</span>
+                                )}
+                                <span className="match-name">  {match["Girl Name"]}</span>
+                            </div>
                             <div>
                                 <span className="match-score">
                                     <i className="fas fa-star"></i> {(match.AdjustedScore * 100).toFixed(0)}%
@@ -48,11 +64,21 @@ function MatchesPage() {
                             </div>
                         </div>
 
-                        <div className="text-end mt-2">
-                            <span className="match-action">
-                                <i className="fas fa-info-circle"></i> פרטים נוספים
-                            </span>
+                        <div className="d-flex justify-content-end gap-2 mt-2">
+                            {idx === 0 && !statusUpdated && (
+                                <button className="btn btn-warning"
+                                        onClick={() => handleConfirmShiduch(match["Girl Name"])}>
+                                    אשר שידוך
+                                </button>
+                            )}
+                            <button
+                                className="btn btn-outline-warning"
+                                onClick={() => navigate(`/profile/girl/${match.targetRecordId}`)}
+                            >
+                                פרטים נוספים
+                            </button>
                         </div>
+
                     </li>
                 ))}
             </ul>

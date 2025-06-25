@@ -9,14 +9,25 @@ function MatchSearchForm() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        fetch("http://localhost:5000/api/boys")
-            .then(res => res.json())
-            .then(data => {
-                const freeBoys = data.filter(boy => boy.status === "פנוי");
-                setBoys(freeBoys);
-            })
-            .catch(() => setMessage("שגיאה בשליפת הבחורים"));
-    }, []);
+    fetch("http://localhost:5000/api/boys")
+        .then(res => res.json())
+        .then(data => {
+            const freeBoys = data
+                .map((boy, i) => {
+                    const isMatched = boy.proposals?.some(p => p.status === "success");
+                    return {
+                        ...boy,
+                        name: `${boy.studentInfo?.firstName || ""} ${boy.studentInfo?.lastName || ""}`,
+                        status: isMatched ? "שודך" : "פנוי"
+                    };
+                })
+                .filter(boy => boy.status === "פנוי");
+
+            setBoys(freeBoys);
+        })
+        .catch(() => setMessage("שגיאה בשליפת הבחורים"));
+}, []);
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
