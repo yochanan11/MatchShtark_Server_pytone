@@ -25,6 +25,9 @@ function Navbar() {
         {/* תוכן התפריט */}
         <div className="collapse navbar-collapse" id="navbarContent">
           <ul className="navbar-nav me-auto mb-2 mb-lg-0">
+            <li className="nav-item">
+              <Link className="nav-link" to="/admin">תפריט ניהול</Link>
+            </li>
             <li className="nav-item dropdown">
               <a className="nav-link dropdown-toggle" href="#!" role="button" data-bs-toggle="dropdown"
                  aria-expanded="false">

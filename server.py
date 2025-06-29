@@ -208,6 +208,29 @@ def sync_girls_status():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+@app.route("/api/users/set-password/<int:record_id>", methods=["POST"])
+def set_password(record_id):
+    try:
+        data = request.json
+        new_password = data.get("newPassword")
+        if not new_password:
+            return jsonify({"error": "יש לספק סיסמה חדשה"}), 400
+
+        user = users_collection.find_one({"recordId": record_id})
+        if not user:
+            return jsonify({"error": "המשתמש לא נמצא"}), 404
+
+        hashed_pw = bcrypt.hashpw(new_password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+
+        users_collection.update_one(
+            {"recordId": record_id},
+            {"$set": {"userInfo.password": hashed_pw}}
+        )
+
+        return jsonify({"message": "הסיסמה עודכנה בהצלחה"})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/api/girl/proposals/<record_id>", methods=["GET"])
 def check_if_girl_has_proposals(record_id):

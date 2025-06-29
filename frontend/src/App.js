@@ -13,6 +13,8 @@ import HistoryPage from './components/HistoryPage';
 import ProfilePage from "./components/profil_page/ProfilePage";
 import AddPersonForm from './components/AddPersonForm/AddPersonForm';
 import ExcelImportPage from './components/AddPersonForm/ExcelImportPage';
+import AdminPage from './components/admin/AdminPage';
+import UsersTable from "./components/admin/UsersTable";
 
 function getCookie(name) {
   const value = `; ${document.cookie}`;
@@ -70,8 +72,9 @@ function App() {
             userChecked ? (user ? <Navigate to="/dashboard" /> : <Navigate to="/users/login" />) : null
           } />
           <Route path="/dashboard" element={<DashboardPage setUser={setUser} />} />
-
           <Route path="/users/login" element={<HomePage setUser={setUser} />} />
+          <Route path="/admin" element={<AdminPage />} />
+          <Route path="/admin/users" element={<UsersTable />} />
           <Route path="/users/register" element={<RegisterForm />} />
           <Route path="/boys" element={<BoysTable />} />
           <Route path="/users/match" element={<MatchSearchForm />} />
