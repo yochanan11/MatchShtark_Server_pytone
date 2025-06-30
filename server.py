@@ -1,6 +1,6 @@
 from flask import Flask, jsonify
 from bson import ObjectId
-from Finel import db, load_model, predict_matches_for_boy, boys_data
+from Finel import db, load_model, predict_matches_for_boy, predict_matches_for_girl, boys_data
 import traceback
 from flask_cors import CORS
 import bcrypt
@@ -11,34 +11,8 @@ CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
 model = load_model()
 
 users_collection = db["user"]
-# ✅ קבלת התאמות לפי אינדקס
-@app.route("/api/matches/boy/<int:boy_index>", methods=["GET"])
-def get_matches_for_boy(boy_index):
-    try:
-        print(f"📥 בקשה עבור אינדקס בחור: {boy_index}")
 
-        if boy_index < 0 or boy_index >= len(boys_data):
-            return jsonify({"error": "Index out of range"}), 400
-
-        boy = boys_data[boy_index]
-        print("👦 הבחור שנבחר:", boy.get("studentInfo", {}).get("firstName", ""), boy.get("studentInfo", {}).get("lastName", ""))
-
-        girls = list(db["shiduchim_banot"].find({"status": {"$ne": "engaged"}}))
-        matches = predict_matches_for_boy(boy, girls, model, top_n=5)
-
-        return jsonify({
-            "boy": {
-                "firstName": boy.get("studentInfo", {}).get("firstName", ""),
-                "lastName": boy.get("studentInfo", {}).get("lastName", "")
-            },
-            "matches": matches
-        })
-
-    except Exception as e:
-        print("❌ שגיאה בזמן עיבוד הבקשה:")
-        traceback.print_exc()
-        return jsonify({"error": str(e)}), 500
-
+users_collection = db["user"]
 
 @app.route("/api/history", methods=["GET"])
 def get_successful_matches():
@@ -66,6 +40,46 @@ def get_successful_matches():
         return jsonify(history)
 
     except Exception as e:
+        return jsonify({"error": str(e)}), 500
+@app.route("/api/matches/boy/<int:boy_index>", methods=["GET"])
+def get_matches_for_boy(boy_index):
+    try:
+        print(f"📥 בקשה עבור אינדקס בחור: {boy_index}")
+
+        if boy_index < 0 or boy_index >= len(boys_data):
+            return jsonify({"error": "Index out of range"}), 400
+
+        boy = boys_data[boy_index]
+
+        # ✅ סינון: אל תביא הצעות לבחורים שכבר שודכו
+        proposals = boy.get("proposals", [])
+        is_matched = any(p.get("status") == "success" for p in proposals)
+        if is_matched:
+            print("🚫 הבחור כבר שודך")
+            return jsonify({
+                "boy": {
+                    "firstName": boy.get("studentInfo", {}).get("firstName", ""),
+                    "lastName": boy.get("studentInfo", {}).get("lastName", "")
+                },
+                "matches": []  # מחזיר ריק במקום שגיאה
+            })
+
+        print("👦 הבחור שנבחר:", boy.get("studentInfo", {}).get("firstName", ""), boy.get("studentInfo", {}).get("lastName", ""))
+
+        girls = list(db["shiduchim_banot"].find({"status": {"$ne": "engaged"}}))
+        matches = predict_matches_for_boy(boy, girls, model, top_n=5)
+
+        return jsonify({
+            "boy": {
+                "firstName": boy.get("studentInfo", {}).get("firstName", ""),
+                "lastName": boy.get("studentInfo", {}).get("lastName", "")
+            },
+            "matches": matches
+        })
+
+    except Exception as e:
+        print("❌ שגיאה בזמן עיבוד הבקשה:")
+        traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
 @app.route("/api/girls", methods=["GET"])
@@ -232,6 +246,52 @@ def set_password(record_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route("/api/matches/girl/<int:record_id>", methods=["GET"])
+def get_matches_for_girl(record_id):
+    try:
+        from Finel import predict_matches_for_girl, load_model, boys_data
+
+        model = load_model()
+
+        # שליפת הבחורה מתוך MongoDB
+        girl = db["shiduchim_banot"].find_one({"recordId": record_id})
+        if not girl:
+            return jsonify({"error": "לא נמצאה בחורה עם מזהה זה"}), 404
+
+        # ✅ סינון אם היא כבר שודכה
+        if girl.get("status") == "engaged":
+            return jsonify({
+                "girl": {
+                    "firstName": girl.get("studentInfo", {}).get("firstName", ""),
+                    "lastName": girl.get("studentInfo", {}).get("lastName", "")
+                },
+                "matches": []  # החזר הצעות ריקות
+            })
+
+        # ✅ שליפת רק בחורים שעדיין לא שודכו (מתוך boys_data בקובץ Finel)
+        available_boys = []
+        for boy in boys_data:
+            is_matched = any(p.get("status") == "success" for p in boy.get("proposals", []))
+            if not is_matched:
+                available_boys.append(boy)
+
+        # חישוב התאמות
+        matches = predict_matches_for_girl(girl, available_boys, model, top_n=5)
+
+        return jsonify({
+            "girl": {
+                "firstName": girl.get("studentInfo", {}).get("firstName", ""),
+                "lastName": girl.get("studentInfo", {}).get("lastName", "")
+            },
+            "matches": matches
+        })
+
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+
+
 @app.route("/api/girl/proposals/<record_id>", methods=["GET"])
 def check_if_girl_has_proposals(record_id):
     try:
@@ -269,59 +329,58 @@ def get_girl_by_record_id(record_id):
 
 
 # ✅ קבלת כל ה-JSON של בחור לפי אינדקס
-@app.route("/api/boy/<int:boy_index>", methods=["GET"])
-def get_boy_full_data(boy_index):
+# @app.route("/api/boy/<int:boy_index>", methods=["GET"])
+# def get_boy_full_data(boy_index):
+#     try:
+#         if boy_index < 0 or boy_index >= len(boys_data):
+#             return jsonify({"error": "Index out of range"}), 400
+#
+#         boy = boys_data[boy_index].copy()
+#
+#         # שליפת כל הבנות מהמונגו
+#         girls = list(db["shiduchim_banot"].find())
+#         girl_dict = {girl.get("recordId"): girl for girl in girls}
+#
+#         # הוספת שם הבחורה לכל הצעה
+#         for proposal in boy.get("proposals", []):
+#             girl = girl_dict.get(proposal.get("targetRecordId"))
+#             if girl:
+#                 first_name = girl.get("studentInfo", {}).get("firstName", "")
+#                 last_name = girl.get("studentInfo", {}).get("lastName", "")
+#                 proposal["girlName"] = f"{first_name} {last_name}"
+#
+#         return jsonify(convert_objectid(boy))
+#
+#     except Exception as e:
+#         print(" שגיאה בשליפת פרטי הבחור:")
+#         traceback.print_exc()
+#         return jsonify({"error": str(e)}), 500
+
+
+# ✅ שליפת בחור לפי recordId
+@app.route("/api/boy-by-id/<int:record_id>", methods=["GET"])
+def get_boy_by_record_id(record_id):
     try:
-        if boy_index < 0 or boy_index >= len(boys_data):
-            return jsonify({"error": "Index out of range"}), 400
+        boy = db["shiduchim_banim"].find_one({"recordId": record_id})
+        if not boy:
+            return jsonify({"error": "לא נמצא בחור עם מזהה זה"}), 404
 
-        boy = boys_data[boy_index].copy()
-
-        # שליפת כל הבנות מהמונגו
+        # שליפת כל הבנות להוספת שמות להצעות
         girls = list(db["shiduchim_banot"].find())
         girl_dict = {girl.get("recordId"): girl for girl in girls}
 
-        # הוספת שם הבחורה לכל הצעה
         for proposal in boy.get("proposals", []):
             girl = girl_dict.get(proposal.get("targetRecordId"))
             if girl:
-                first_name = girl.get("studentInfo", {}).get("firstName", "")
-                last_name = girl.get("studentInfo", {}).get("lastName", "")
-                proposal["girlName"] = f"{first_name} {last_name}"
+                proposal["girlName"] = girl.get("studentInfo", {}).get("firstName", "") + " " + girl.get("studentInfo", {}).get("lastName", "")
 
         return jsonify(convert_objectid(boy))
-
     except Exception as e:
-        print(" שגיאה בשליפת פרטי הבחור:")
+        print("❌ שגיאה בשליפת פרטי הבחור לפי recordId:")
+        import traceback
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
-
-# ✅ קבלת רשימת כל הבחורים עם אינדקסים
-
-# @app.route("/api/boys", methods=["GET"])
-# def get_all_boys():
-#     try:
-#         boys_list = []
-#         for i, boy in enumerate(boys_data):
-#             name = boy.get("studentInfo", {}).get("firstName", "") + " " + boy.get("studentInfo", {}).get("lastName",
-#                                                                                                           "")
-#
-#             proposals = boy.get("proposals", [])
-#             is_matched = any(p.get("status") == "success" for p in proposals)
-#             status = "שודך" if is_matched else "פנוי"
-#
-#             boys_list.append({
-#                 "index": i,
-#                 "name": name,
-#                 "status": status
-#             })
-#         return jsonify(boys_list)
-#
-#     except Exception as e:
-#         print(" שגיאה בשליפת רשימת הבחורים:")
-#         traceback.print_exc()
-#         return jsonify({"error": str(e)}), 500
 
 # ממיר ObjectId לכל מחרוזת בתוך JSON מורכב
 def convert_objectid(obj):

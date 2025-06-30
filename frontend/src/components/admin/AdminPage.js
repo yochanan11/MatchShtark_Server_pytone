@@ -5,7 +5,7 @@ function AdminPage() {
   const [code, setCode] = useState("");
   const [isAuthorized, setIsAuthorized] = useState(false);
   const secretCode = "456789";
-  const navigate = useNavigate(); // ✅
+  const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -34,14 +34,21 @@ function AdminPage() {
   };
 
   const goToUsersPage = () => {
-    navigate("/admin/users"); // ✅
+    navigate("/admin/users");
   };
 
   return (
-    <div className="container" dir="rtl">
+    <div className="container-fluid" dir="rtl">
       <div className="row justify-content-center">
         <div className="col-md-6 mt-5">
-          <div className="card shadow border-0">
+          <div
+            className="card shadow border-0 p-4"
+            style={{
+              borderRadius: "1rem",
+              boxShadow: "0 0.5rem 1rem rgba(0, 0, 0, 0.15)",
+              backgroundColor: "white",
+            }}
+          >
             <div className="card-body text-center">
               {!isAuthorized ? (
                 <>
@@ -62,12 +69,20 @@ function AdminPage() {
               ) : (
                 <>
                   <h3 className="text-success mb-4">ברוך הבא לתפריט הניהול</h3>
-                  <p className="text-muted">כאן תוכל לנהל נתונים, משתמשים או התאמות.</p>
+                  <p className="text-muted">
+                    כאן תוכל לנהל נתונים, משתמשים או התאמות.
+                  </p>
                   <div className="d-grid gap-3 mt-4">
-                    <button className="btn btn-outline-secondary" onClick={goToUsersPage}>
+                    <button
+                      className="btn btn-outline-secondary"
+                      onClick={goToUsersPage}
+                    >
                       הצג רשימת משתמשים
                     </button>
-                    <button className="btn btn-outline-secondary" onClick={handleModelTraining}>
+                    <button
+                      className="btn btn-outline-secondary"
+                      onClick={handleModelTraining}
+                    >
                       אימון מודל מחדש
                     </button>
                   </div>

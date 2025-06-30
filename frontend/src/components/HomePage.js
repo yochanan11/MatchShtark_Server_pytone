@@ -6,8 +6,8 @@ import Footer from "./Footer";
 
 function HomePage({ setUser }) {
     return (
-        <div>
-            <div className="container text-center mt-5">
+        <div className="page-box">
+            <div className="container text-center mt-5 ">
                 <LogoSection />
                 <LoginForm setUser={setUser} />
                 <RegisterLink />

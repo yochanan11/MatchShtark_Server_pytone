@@ -80,7 +80,8 @@ function App() {
           <Route path="/users/match" element={<MatchSearchForm />} />
           <Route path="/matches" element={<MatchesPage />} />
           <Route path="/users/history" element={<HistoryPage />} />
-          <Route path="/profile/boy/:index" element={<ProfilePage isBoy={true} />} />
+
+          <Route path="/profile/boy/:recordId" element={<ProfilePage isBoy={true} />} />
           <Route path="/profile/girl/:recordId" element={<ProfilePage isBoy={false} />} />
           <Route path="/add-person" element={<AddPersonForm />} />
           <Route path="/add-from-excel" element={<ExcelImportPage />} />

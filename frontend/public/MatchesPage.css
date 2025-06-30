@@ -1,9 +1,9 @@
 :root {
     --primary-color: #c49b50;     /* זהב */
-    --secondary-color: #c49b50;   /* זהב */
-    --accent-color: #c49b50;      /* זהב */
-    --light-color: #f8f9fa;       /* רקע כללי */
-    --dark-color: #000000;        /* שחור */
+    --secondary-color: #c49b50;
+    --accent-color: #c49b50;
+    --light-color: #f8f9fa;
+    --dark-color: #000000;
 }
 
 body {
@@ -12,95 +12,19 @@ body {
     color: var(--dark-color);
 }
 
-.container {
+.page-box {
     max-width: 800px;
+    margin: 2rem auto;
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
     border-radius: 1rem;
     background-color: white;
     padding: 2rem;
 }
-
-.page-header {
-    text-align: center;
-    margin-bottom: 2rem;
-    padding-bottom: 1rem;
-    border-bottom: 2px solid var(--secondary-color);
-    color: var(--primary-color);
-}
-
-.page-header i {
-    margin-left: 0.5rem;
-    color: var(--primary-color);
-}
-
-.match-list {
-    list-style-type: none;
-    padding: 0;
-}
-
-.match-item {
-    background-color: var(--light-color);
-    border-radius: 0.5rem;
-    padding: 1rem;
-    margin-bottom: 1rem;
-    border-right: 4px solid var(--primary-color);
-    transition: all 0.3s ease;
-}
-
-.match-item:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 0.5rem 0.5rem rgba(0, 0, 0, 0.1);
-}
-
-.match-name {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: var(--dark-color);
-}
-
-.match-score {
-    display: inline-block;
-    background-color: var(--primary-color);
-    color: white;
-    padding: 0.25rem 0.75rem;
+.container {
+    max-width: 800px;
+    margin: 2rem auto;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
     border-radius: 1rem;
-    margin-right: 0.5rem;
-    font-weight: 500;
-}
-
-.match-details {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 0.5rem;
-}
-
-.match-action {
-    color: var(--accent-color);
-    border: 1px solid var(--accent-color);
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.5rem;
-    display: inline-block;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.match-action:hover {
-    background-color: var(--accent-color);
-    color: white;
-}
-
-.footer {
-    text-align: center;
-    margin-top: 2rem;
-    color: #777;
-    font-size: 0.9rem;
-}
-.badge.bg-gold {
-    background-color: #c49b50;
-    color: white;
-    padding: 0.4em 0.7em;
-    font-size: 0.8rem;
-    border-radius: 1rem;
+    background-color: white;
+    padding: 2rem;
 }

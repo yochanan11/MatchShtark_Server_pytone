@@ -1,5 +1,5 @@
-import React, {useEffect, useState} from "react";
-import {useParams} from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import Spinner from "../Spinner";
 import EditableField from "./EditableField";
 import ParentSection from "./ParentSection";
@@ -8,60 +8,59 @@ import InLawsSection from "./InLawsSection";
 import ProposalsSection from "./ProposalsSection";
 import SectionToggle from "./SectionToggle";
 
-function ProfilePage({isBoy}) {
-    const {index, recordId} = useParams();
+function ProfilePage({ isBoy }) {
+    const { recordId } = useParams();
     const [data, setData] = useState(null);
     const [originalData, setOriginalData] = useState(null);
     const [proposals, setProposals] = useState([]);
     const [editMode, setEditMode] = useState(false);
-
-    const id = isBoy ? index : recordId;
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
 
     useEffect(() => {
-        if (!id) {
-            console.warn("⚠️ מזהה (id) לא קיים - לא נשלחה בקשה לשרת");
+        if (!recordId) {
+            setError("❌ מזהה לא חוקי");
+            setLoading(false);
             return;
         }
 
         const url = isBoy
-            ? `http://localhost:5000/api/boy/${id}`
-            : `http://localhost:5000/api/girl/${id}`;
+            ? `http://localhost:5000/api/boy-by-id/${recordId}`
+            : `http://localhost:5000/api/girl/${recordId}`;
 
         fetch(url)
             .then((res) => res.json())
             .then((data) => {
-                console.log(data);
-                console.log("📦", data.contactPhones);
+                if (data.error) throw new Error(data.error);
                 setData(data);
                 setOriginalData(JSON.parse(JSON.stringify(data)));
-                setProposals(data.proposals || []); // ✅ קבלת הצעות ישירות מהתגובה
+                setProposals(data.proposals || []);
             })
             .catch((err) => {
-                console.error("❌ שגיאה בעת שליחת בקשת fetch:", err);
-            });
+                console.error("❌ שגיאה בטעינת פרטי משתמש:", err);
+                setError("אירעה שגיאה בעת טעינת פרטי המשתמש");
+            })
+            .finally(() => setLoading(false));
 
         if (!isBoy) {
             fetch(`http://localhost:5000/api/girl/proposals/${recordId}`)
                 .then((res) => res.json())
                 .then((data) => setProposals(data))
-                .catch((err) => {
-                    console.error("❌ שגיאה בקבלת הצעות לבחורה:", err);
-                });
+                .catch((err) => console.error("❌ שגיאה בקבלת הצעות לבחורה:", err));
         }
-    }, [id, isBoy, recordId]);
-
+    }, [recordId, isBoy]);
 
     const info = data?.studentInfo || {};
 
     const handleSave = async () => {
         const url = isBoy
-            ? `http://localhost:5000/api/boy/${id}`
-            : `http://localhost:5000/api/girl/${id}`;
+            ? `http://localhost:5000/api/boy/${recordId}`
+            : `http://localhost:5000/api/girl/${recordId}`;
 
         try {
             const res = await fetch(url, {
                 method: "PUT",
-                headers: {"Content-Type": "application/json"},
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(data),
             });
 
@@ -83,7 +82,8 @@ function ProfilePage({isBoy}) {
         setEditMode(!editMode);
     };
 
-    if (!data) return <Spinner text="טוען פרטי משתמש..."/>;
+    if (loading) return <Spinner text="טוען פרטי משתמש..." />;
+    if (error) return <div className="text-center mt-5 text-danger fw-bold">{error}</div>;
 
     return (
         <div className="container mt-4" dir="rtl">
@@ -102,40 +102,39 @@ function ProfilePage({isBoy}) {
                     <EditableField label="שם פרטי" value={info.firstName} onChange={(val) =>
                         setData((prev) => ({
                             ...prev,
-                            studentInfo: {...prev.studentInfo, firstName: val},
+                            studentInfo: { ...prev.studentInfo, firstName: val },
                         }))
-                    }/>
+                    } />
                     <EditableField label="שם משפחה" value={info.lastName} onChange={(val) =>
                         setData((prev) => ({
                             ...prev,
-                            studentInfo: {...prev.studentInfo, lastName: val},
+                            studentInfo: { ...prev.studentInfo, lastName: val },
                         }))
-                    }/>
+                    } />
                     <EditableField label="גיל" value={info.age} onChange={(val) =>
                         setData((prev) => ({
                             ...prev,
-                            studentInfo: {...prev.studentInfo, age: val},
+                            studentInfo: { ...prev.studentInfo, age: val },
                         }))
-                    }/>
+                    } />
                     <EditableField label="טלפון" value={info.phone} onChange={(val) =>
                         setData((prev) => ({
                             ...prev,
-                            studentInfo: {...prev.studentInfo, phone: val},
+                            studentInfo: { ...prev.studentInfo, phone: val },
                         }))
-                    }/>
+                    } />
                     <EditableField label="סגנון" value={info.style} onChange={(val) =>
                         setData((prev) => ({
                             ...prev,
-                            studentInfo: {...prev.studentInfo, style: val},
+                            studentInfo: { ...prev.studentInfo, style: val },
                         }))
-                    }/>
+                    } />
                     <EditableField label="בחירה" value={info.choice} onChange={(val) =>
                         setData((prev) => ({
                             ...prev,
-                            studentInfo: {...prev.studentInfo, choice: val},
+                            studentInfo: { ...prev.studentInfo, choice: val },
                         }))
-                    }/>
-
+                    } />
                     <EditableField
                         label="סמינר/ישיבה"
                         value={info.currentSeminary || info.currentYeshiva || ""}
@@ -145,8 +144,8 @@ function ProfilePage({isBoy}) {
                                 studentInfo: {
                                     ...prev.studentInfo,
                                     ...(info.currentSeminary !== undefined
-                                        ? {currentSeminary: val}
-                                        : {currentYeshiva: val}),
+                                        ? { currentSeminary: val }
+                                        : { currentYeshiva: val }),
                                 },
                             }))
                         }
@@ -166,17 +165,11 @@ function ProfilePage({isBoy}) {
             )}
 
             <SectionToggle label="פרטי אב">
-                <ParentSection
-                    label="אב"
-                    parentInfo={data.fatherInfo || {}}
-                />
+                <ParentSection label="אב" parentInfo={data.fatherInfo || {}} />
             </SectionToggle>
 
             <SectionToggle label="פרטי אם">
-                <ParentSection
-                    label="אם"
-                    parentInfo={data.motherInfo || {}}
-                />
+                <ParentSection label="אם" parentInfo={data.motherInfo || {}} />
             </SectionToggle>
 
             <SectionToggle label="שכנים וחברים">
@@ -187,16 +180,12 @@ function ProfilePage({isBoy}) {
             </SectionToggle>
 
             <SectionToggle label="מחותנים">
-                <InLawsSection
-                    inLaws={data.inLaws || []}
-                />
+                <InLawsSection inLaws={data.inLaws || []} />
             </SectionToggle>
-
 
             <SectionToggle label="הצעות">
-                <ProposalsSection proposals={proposals}/>
+                <ProposalsSection proposals={proposals} />
             </SectionToggle>
-
         </div>
     );
 }

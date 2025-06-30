@@ -53,6 +53,11 @@ def analyze_match(boy, girl):
 # פונקציה לניבוי התאמות עבור בחור מסוים
 def predict_matches_for_boy(boy, girls, model, top_n=5):
     predictions = []
+
+    # ✅ דלג אם הבחור כבר שודך
+    if any(p.get("status") == "success" for p in boy.get("proposals", [])):
+        return []  # החזר רשימה ריקה
+
     for girl in girls:
         if girl.get("status") == "engaged":
             continue
@@ -65,8 +70,6 @@ def predict_matches_for_boy(boy, girls, model, top_n=5):
 
         score = model.predict_proba(feature_vector)[0][1]
 
-        # ✅ המרת score ל-float רגיל
-        # ✅ המרת ערכים בתוך Details ל-int או float רגילים
         cleaned_details = {
             k: (int(v) if isinstance(v, (np.integer, bool)) else float(v) if isinstance(v, np.floating) else v)
             for k, v in match_features.items()
@@ -76,10 +79,11 @@ def predict_matches_for_boy(boy, girls, model, top_n=5):
             "Girl Name": girl.get("studentInfo", {}).get("firstName", "") + " " + girl.get("studentInfo", {}).get("lastName", ""),
             "Score": float(score),
             "Details": cleaned_details,
-            "targetRecordId": girl.get("recordId")
+            "RecordId": girl.get("recordId")
         })
 
     return sorted(predictions, key=lambda x: x["Score"], reverse=True)[:top_n]
+
 
 
 # שמירת המודל לקובץ
@@ -178,6 +182,41 @@ def request_new_match(boys_data, girls_data, model):
 
         except ValueError:
             print("Invalid input! Please enter a valid integer.")
+
+def predict_matches_for_girl(girl, boys, model, top_n=5):
+    predictions = []
+    girl_id = girl.get("recordId")
+
+    for idx, boy in enumerate(boys):
+        # ✅ סינון לפי סטטוס וגם לפי הצעות
+        if boy.get("status") == "engaged":
+            continue
+        if any(p.get("status") == "success" for p in boy.get("proposals", [])):
+            continue
+
+        match_features = analyze_match(boy, girl)
+        feature_vector = pd.DataFrame([match_features])
+        feature_vector = feature_vector.apply(pd.to_numeric, errors='coerce').fillna(0)
+        feature_vector = feature_vector.drop(columns=["Status"], errors="ignore")
+        feature_vector = feature_vector[model.get_booster().feature_names]
+
+        score = model.predict_proba(feature_vector)[0][1]
+
+        cleaned_details = {
+            k: (int(v) if isinstance(v, (np.integer, bool)) else float(v) if isinstance(v, np.floating) else v)
+            for k, v in match_features.items()
+        }
+
+        predictions.append({
+            "Boy Name": boy.get("studentInfo", {}).get("firstName", "") + " " + boy.get("studentInfo", {}).get("lastName", ""),
+            "Score": float(score),
+            "Details": cleaned_details,
+            "recordId": boy.get("recordId"),
+            "index": idx
+        })
+
+    return sorted(predictions, key=lambda x: x["Score"], reverse=True)[:top_n]
+
 
 
 if __name__ == "__main__":
