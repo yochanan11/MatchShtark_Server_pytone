@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 
 function AdminPage() {
   const [code, setCode] = useState("");
@@ -85,6 +85,7 @@ function AdminPage() {
                     >
                       אימון מודל מחדש
                     </button>
+                        <Link className="btn btn-outline-secondary" to="/model/importance">גרף השפעות המודל</Link>
                   </div>
                 </>
               )}

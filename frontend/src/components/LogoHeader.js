@@ -4,9 +4,9 @@ function LogoHeader() {
     return (
         <div className="logo mb-4">
             <img
-                src="/MatchShtark.png"
+                src="/MatchShtark1.png"
                 alt="MatchShtark Logo"
-                style={{ height: "20%", width: "20%" }}
+                style={{ height: "30%", width: "30%" }}
             />
         </div>
     );

@@ -12,8 +12,6 @@ model = load_model()
 
 users_collection = db["user"]
 
-users_collection = db["user"]
-
 @app.route("/api/history", methods=["GET"])
 def get_successful_matches():
     try:
@@ -41,6 +39,26 @@ def get_successful_matches():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@app.route("/api/model/importance-data", methods=["GET"])
+def get_importance_data():
+        try:
+            from Finel import best_model
+            import numpy as np
+
+            booster = best_model.get_booster()
+            scores = booster.get_score(importance_type='weight')
+
+            # מיון לפי השפעה
+            sorted_scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+            data = [{"feature": k, "importance": float(v)} for k, v in sorted_scores]
+
+            return jsonify(data)
+
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
+
 @app.route("/api/matches/boy/<int:boy_index>", methods=["GET"])
 def get_matches_for_boy(boy_index):
     try:
@@ -148,11 +166,12 @@ def update_girl(record_id):
 @app.route("/api/retrain-model", methods=["POST"])
 def retrain_model():
     try:
-        from Finel import train_or_load_model, X_train, y_train
+        from Finel import train_or_load_model  # ✅ רק את הפונקציה
 
         print("🔁 בקשת אימון מחדש התקבלה")
         global model
-        model = train_or_load_model(X_train, y_train, force_train=True)
+        model = train_or_load_model(force_train=True)  # ✅ מפעיל עם אימון כפוי
+
         return jsonify({"message": "המודל אומן ונשמר מחדש בהצלחה"})
 
     except Exception as e:
@@ -160,6 +179,7 @@ def retrain_model():
         import traceback
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
+
 
 @app.route("/api/import/<collection>", methods=["POST"])
 def import_from_excel(collection):

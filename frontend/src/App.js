@@ -15,6 +15,7 @@ import AddPersonForm from './components/AddPersonForm/AddPersonForm';
 import ExcelImportPage from './components/AddPersonForm/ExcelImportPage';
 import AdminPage from './components/admin/AdminPage';
 import UsersTable from "./components/admin/UsersTable";
+import FeatureImportancePage from "./components/FeatureImportancePage";
 
 function getCookie(name) {
   const value = `; ${document.cookie}`;
@@ -80,6 +81,7 @@ function App() {
           <Route path="/users/match" element={<MatchSearchForm />} />
           <Route path="/matches" element={<MatchesPage />} />
           <Route path="/users/history" element={<HistoryPage />} />
+          <Route path="/model/importance" element={<FeatureImportancePage />} />
 
           <Route path="/profile/boy/:recordId" element={<ProfilePage isBoy={true} />} />
           <Route path="/profile/girl/:recordId" element={<ProfilePage isBoy={false} />} />

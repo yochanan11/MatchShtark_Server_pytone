@@ -4,7 +4,7 @@ function LogoSection() {
     return (
         <>
             <div className="logo">
-                <img src="/MatchShtark.png" alt="MatchShtark Logo" style={{ height: "20%", width: "20%" }} />
+                <img src="/MatchShtark1.png" alt="MatchShtark Logo" style={{ height: "50%", width: "50%" }} />
             </div>
             <h1>ברוכים הבאים</h1>
             <p className="description">
