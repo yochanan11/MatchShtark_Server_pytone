@@ -42,21 +42,23 @@ def get_successful_matches():
 
 @app.route("/api/model/importance-data", methods=["GET"])
 def get_importance_data():
-        try:
-            from Finel import best_model
-            import numpy as np
+    try:
+        import os
+        import json
 
-            booster = best_model.get_booster()
-            scores = booster.get_score(importance_type='weight')
-
-            # מיון לפי השפעה
-            sorted_scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)
-            data = [{"feature": k, "importance": float(v)} for k, v in sorted_scores]
-
+        if os.path.exists("feature_importance_data.json"):
+            with open("feature_importance_data.json", encoding="utf-8") as f:
+                data = json.load(f)
             return jsonify(data)
+        else:
+            return jsonify({"error": "לא נמצאו נתונים. נא לאמן את המודל לפחות פעם אחת."}), 404
 
-        except Exception as e:
-            return jsonify({"error": str(e)}), 500
+    except Exception as e:
+        print("❌ שגיאה בקריאת נתוני החשיבות מהקובץ:")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
 
 
 @app.route("/api/matches/boy/<int:boy_index>", methods=["GET"])

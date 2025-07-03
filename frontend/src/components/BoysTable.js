@@ -1,31 +1,31 @@
-import React, { useEffect, useState } from "react";
-import { Search, Filter, Users, Heart, School, User, RefreshCw, Eye } from "lucide-react";
+import React, {useEffect, useState} from "react";
+import {Search, Filter, Users, Heart, School, User, RefreshCw, Eye} from "lucide-react";
 
 // Spinner Component
-function Spinner({ text = "טוען..." }) {
-  return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '40px'
-    }}>
-      <div style={{
-        width: '40px',
-        height: '40px',
-        border: '4px solid #FEF3C7',
-        borderTop: '4px solid #D97706',
-        borderRadius: '50%',
-        animation: 'spin 1s linear infinite',
-        marginBottom: '16px'
-      }}></div>
-      <p style={{ color: '#92400E', fontSize: '16px' }}>{text}</p>
-      <style>
-        {`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}
-      </style>
-    </div>
-  );
+function Spinner({text = "טוען..."}) {
+    return (
+        <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '40px'
+        }}>
+            <div style={{
+                width: '40px',
+                height: '40px',
+                border: '4px solid #FEF3C7',
+                borderTop: '4px solid #D97706',
+                borderRadius: '50%',
+                animation: 'spin 1s linear infinite',
+                marginBottom: '16px'
+            }}></div>
+            <p style={{color: '#92400E', fontSize: '16px'}}>{text}</p>
+            <style>
+                {`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}
+            </style>
+        </div>
+    );
 }
 
 function MatchesTable() {
@@ -151,7 +151,7 @@ function MatchesTable() {
 
     if (loading) return (
         <div style={containerStyle}>
-            <Spinner text="טוען נתונים..." />
+            <Spinner text="טוען נתונים..."/>
         </div>
     );
 
@@ -162,7 +162,7 @@ function MatchesTable() {
             name: `${b.studentInfo?.firstName || ""} ${b.studentInfo?.lastName || ""}`,
             institution: b.studentInfo?.currentYeshiva || "לא צוין",
             matched: b.proposals?.some(p => p.status === "success") || false,
-            link: `/profile/boy/${b.index}`
+            link: `/profile/boy/${b.recordId}`
         })),
         ...girls.map(g => ({
             ...g,
@@ -203,9 +203,10 @@ function MatchesTable() {
         <div style={containerStyle} dir="rtl">
             {/* Header */}
             <div style={headerStyle}>
-                <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 16px', textAlign: 'center' }}>
+                <div style={{maxWidth: '1200px', margin: '0 auto', padding: '0 16px', textAlign: 'center'}}>
                     {/* Logo Section */}
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '24px' }}>
+                    <div
+                        style={{display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '24px'}}>
                         <div style={{
                             color: '#374151',
                             fontSize: '32px',
@@ -226,13 +227,13 @@ function MatchesTable() {
                     }}>
                         👥 מאגר המועמדים
                     </h1>
-                    <p style={{ color: '#6B7280', maxWidth: '600px', margin: '0 auto' }}>
+                    <p style={{color: '#6B7280', maxWidth: '600px', margin: '0 auto'}}>
                         חפש וסנן מועמדים למציאת ההתאמה המושלמת
                     </p>
                 </div>
             </div>
 
-            <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 16px 32px' }}>
+            <div style={{maxWidth: '1200px', margin: '0 auto', padding: '0 16px 32px'}}>
                 {error && (
                     <div style={{
                         backgroundColor: '#FEE2E2',
@@ -263,10 +264,10 @@ function MatchesTable() {
                         display: 'flex',
                         alignItems: 'center'
                     }}>
-                        <Users style={{ width: '24px', height: '24px', color: '#D97706', marginLeft: '12px' }} />
+                        <Users style={{width: '24px', height: '24px', color: '#D97706', marginLeft: '12px'}}/>
                         <div>
-                            <h3 style={{ fontSize: '14px', color: '#6B7280', margin: 0 }}>סה"כ מועמדים</h3>
-                            <p style={{ fontSize: '20px', fontWeight: 'bold', color: '#1F2937', margin: '4px 0 0 0' }}>
+                            <h3 style={{fontSize: '14px', color: '#6B7280', margin: 0}}>סה"כ מועמדים</h3>
+                            <p style={{fontSize: '20px', fontWeight: 'bold', color: '#1F2937', margin: '4px 0 0 0'}}>
                                 {mergedData.length}
                             </p>
                         </div>
@@ -280,10 +281,10 @@ function MatchesTable() {
                         display: 'flex',
                         alignItems: 'center'
                     }}>
-                        <Heart style={{ width: '24px', height: '24px', color: '#D97706', marginLeft: '12px' }} />
+                        <Heart style={{width: '24px', height: '24px', color: '#D97706', marginLeft: '12px'}}/>
                         <div>
-                            <h3 style={{ fontSize: '14px', color: '#6B7280', margin: 0 }}>שודכו בהצלחה</h3>
-                            <p style={{ fontSize: '20px', fontWeight: 'bold', color: '#1F2937', margin: '4px 0 0 0' }}>
+                            <h3 style={{fontSize: '14px', color: '#6B7280', margin: 0}}>שודכו בהצלחה</h3>
+                            <p style={{fontSize: '20px', fontWeight: 'bold', color: '#1F2937', margin: '4px 0 0 0'}}>
                                 {mergedData.filter(p => p.matched).length}
                             </p>
                         </div>
@@ -297,10 +298,10 @@ function MatchesTable() {
                         display: 'flex',
                         alignItems: 'center'
                     }}>
-                        <Search style={{ width: '24px', height: '24px', color: '#D97706', marginLeft: '12px' }} />
+                        <Search style={{width: '24px', height: '24px', color: '#D97706', marginLeft: '12px'}}/>
                         <div>
-                            <h3 style={{ fontSize: '14px', color: '#6B7280', margin: 0 }}>תוצאות חיפוש</h3>
-                            <p style={{ fontSize: '20px', fontWeight: 'bold', color: '#1F2937', margin: '4px 0 0 0' }}>
+                            <h3 style={{fontSize: '14px', color: '#6B7280', margin: 0}}>תוצאות חיפוש</h3>
+                            <p style={{fontSize: '20px', fontWeight: 'bold', color: '#1F2937', margin: '4px 0 0 0'}}>
                                 {filtered.length}
                             </p>
                         </div>
@@ -309,9 +310,9 @@ function MatchesTable() {
 
                 {/* Filters */}
                 <div style={filterCardStyle}>
-                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px' }}>
-                        <Filter style={{ width: '20px', height: '20px', color: '#D97706', marginLeft: '8px' }} />
-                        <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1F2937', margin: 0 }}>
+                    <div style={{display: 'flex', alignItems: 'center', marginBottom: '20px'}}>
+                        <Filter style={{width: '20px', height: '20px', color: '#D97706', marginLeft: '8px'}}/>
+                        <h2 style={{fontSize: '18px', fontWeight: 'bold', color: '#1F2937', margin: 0}}>
                             סינון וחיפוש
                         </h2>
                     </div>
@@ -323,7 +324,13 @@ function MatchesTable() {
                         marginBottom: '20px'
                     }}>
                         <div>
-                            <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>
+                            <label style={{
+                                display: 'block',
+                                fontSize: '14px',
+                                fontWeight: '600',
+                                color: '#374151',
+                                marginBottom: '6px'
+                            }}>
                                 סוג:
                             </label>
                             <select
@@ -340,7 +347,13 @@ function MatchesTable() {
                         </div>
 
                         <div>
-                            <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>
+                            <label style={{
+                                display: 'block',
+                                fontSize: '14px',
+                                fontWeight: '600',
+                                color: '#374151',
+                                marginBottom: '6px'
+                            }}>
                                 סטטוס:
                             </label>
                             <select
@@ -357,7 +370,13 @@ function MatchesTable() {
                         </div>
 
                         <div>
-                            <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>
+                            <label style={{
+                                display: 'block',
+                                fontSize: '14px',
+                                fontWeight: '600',
+                                color: '#374151',
+                                marginBottom: '6px'
+                            }}>
                                 מוסד לימוד:
                             </label>
                             <select
@@ -382,7 +401,13 @@ function MatchesTable() {
                         alignItems: 'end'
                     }}>
                         <div>
-                            <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>
+                            <label style={{
+                                display: 'block',
+                                fontSize: '14px',
+                                fontWeight: '600',
+                                color: '#374151',
+                                marginBottom: '6px'
+                            }}>
                                 חיפוש לפי שם:
                             </label>
                             <input
@@ -406,7 +431,7 @@ function MatchesTable() {
                             onMouseEnter={(e) => e.target.style.backgroundColor = '#4B5563'}
                             onMouseLeave={(e) => e.target.style.backgroundColor = '#6B7280'}
                         >
-                            <RefreshCw size={16} />
+                            <RefreshCw size={16}/>
                             נקה סינונים
                         </button>
                     </div>
@@ -419,106 +444,112 @@ function MatchesTable() {
                         padding: '16px 24px',
                         borderBottom: '1px solid #FEF3C7'
                     }}>
-                        <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1F2937', margin: 0 }}>
+                        <h3 style={{fontSize: '18px', fontWeight: 'bold', color: '#1F2937', margin: 0}}>
                             תוצאות חיפוש ({filtered.length} מועמדים)
                         </h3>
                     </div>
 
-                    <div style={{ overflowX: 'auto' }}>
-                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <div style={{overflowX: 'auto'}}>
+                        <table style={{width: '100%', borderCollapse: 'collapse'}}>
                             <thead>
-                                <tr style={{ backgroundColor: '#FFFBEB' }}>
-                                    <th style={{
-                                        padding: '16px 12px',
-                                        textAlign: 'right',
-                                        fontSize: '14px',
-                                        fontWeight: '600',
-                                        color: '#374151',
-                                        borderBottom: '2px solid #FEF3C7'
-                                    }}>#</th>
-                                    <th style={{
-                                        padding: '16px 12px',
-                                        textAlign: 'right',
-                                        fontSize: '14px',
-                                        fontWeight: '600',
-                                        color: '#374151',
-                                        borderBottom: '2px solid #FEF3C7'
-                                    }}>שם</th>
-                                    <th style={{
-                                        padding: '16px 12px',
-                                        textAlign: 'right',
-                                        fontSize: '14px',
-                                        fontWeight: '600',
-                                        color: '#374151',
-                                        borderBottom: '2px solid #FEF3C7'
-                                    }}>מוסד</th>
-                                    <th style={{
-                                        padding: '16px 12px',
-                                        textAlign: 'center',
-                                        fontSize: '14px',
-                                        fontWeight: '600',
-                                        color: '#374151',
-                                        borderBottom: '2px solid #FEF3C7'
-                                    }}>סטטוס</th>
-                                    <th style={{
-                                        padding: '16px 12px',
-                                        textAlign: 'center',
-                                        fontSize: '14px',
-                                        fontWeight: '600',
-                                        color: '#374151',
-                                        borderBottom: '2px solid #FEF3C7'
-                                    }}>סוג</th>
-                                    <th style={{
-                                        padding: '16px 12px',
-                                        textAlign: 'center',
-                                        fontSize: '14px',
-                                        fontWeight: '600',
-                                        color: '#374151',
-                                        borderBottom: '2px solid #FEF3C7'
-                                    }}>פעולה</th>
-                                </tr>
+                            <tr style={{backgroundColor: '#FFFBEB'}}>
+                                <th style={{
+                                    padding: '16px 12px',
+                                    textAlign: 'right',
+                                    fontSize: '14px',
+                                    fontWeight: '600',
+                                    color: '#374151',
+                                    borderBottom: '2px solid #FEF3C7'
+                                }}>#
+                                </th>
+                                <th style={{
+                                    padding: '16px 12px',
+                                    textAlign: 'right',
+                                    fontSize: '14px',
+                                    fontWeight: '600',
+                                    color: '#374151',
+                                    borderBottom: '2px solid #FEF3C7'
+                                }}>שם
+                                </th>
+                                <th style={{
+                                    padding: '16px 12px',
+                                    textAlign: 'right',
+                                    fontSize: '14px',
+                                    fontWeight: '600',
+                                    color: '#374151',
+                                    borderBottom: '2px solid #FEF3C7'
+                                }}>מוסד
+                                </th>
+                                <th style={{
+                                    padding: '16px 12px',
+                                    textAlign: 'center',
+                                    fontSize: '14px',
+                                    fontWeight: '600',
+                                    color: '#374151',
+                                    borderBottom: '2px solid #FEF3C7'
+                                }}>סטטוס
+                                </th>
+                                <th style={{
+                                    padding: '16px 12px',
+                                    textAlign: 'center',
+                                    fontSize: '14px',
+                                    fontWeight: '600',
+                                    color: '#374151',
+                                    borderBottom: '2px solid #FEF3C7'
+                                }}>סוג
+                                </th>
+                                <th style={{
+                                    padding: '16px 12px',
+                                    textAlign: 'center',
+                                    fontSize: '14px',
+                                    fontWeight: '600',
+                                    color: '#374151',
+                                    borderBottom: '2px solid #FEF3C7'
+                                }}>פעולה
+                                </th>
+                            </tr>
                             </thead>
                             <tbody>
-                                {filtered.map((person, idx) => (
-                                    <tr key={idx} style={{
-                                        borderBottom: '1px solid #F3F4F6',
-                                        transition: 'background-color 0.2s ease'
-                                    }}
+                            {filtered.map((person, idx) => (
+                                <tr key={idx} style={{
+                                    borderBottom: '1px solid #F3F4F6',
+                                    transition: 'background-color 0.2s ease'
+                                }}
                                     onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#FFFBEB'}
                                     onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
-                                    >
-                                        <td style={{
-                                            padding: '16px 12px',
-                                            fontSize: '14px',
-                                            color: '#6B7280'
-                                        }}>
-                                            {idx + 1}
-                                        </td>
-                                        <td style={{
-                                            padding: '16px 12px',
-                                            fontSize: '14px',
-                                            color: '#1F2937',
-                                            fontWeight: '500'
-                                        }}>
-                                            <div style={{ display: 'flex', alignItems: 'center' }}>
-                                                <User size={16} style={{ color: '#D97706', marginLeft: '8px' }} />
-                                                {person.name}
-                                            </div>
-                                        </td>
-                                        <td style={{
-                                            padding: '16px 12px',
-                                            fontSize: '14px',
-                                            color: '#6B7280'
-                                        }}>
-                                            <div style={{ display: 'flex', alignItems: 'center' }}>
-                                                <School size={14} style={{ color: '#9CA3AF', marginLeft: '6px' }} />
-                                                {person.institution}
-                                            </div>
-                                        </td>
-                                        <td style={{
-                                            padding: '16px 12px',
-                                            textAlign: 'center'
-                                        }}>
+                                >
+                                    <td style={{
+                                        padding: '16px 12px',
+                                        fontSize: '14px',
+                                        color: '#6B7280'
+                                    }}>
+                                        {idx + 1}
+                                    </td>
+                                    <td style={{
+                                        padding: '16px 12px',
+                                        fontSize: '14px',
+                                        color: '#1F2937',
+                                        fontWeight: '500'
+                                    }}>
+                                        <div style={{display: 'flex', alignItems: 'center'}}>
+                                            <User size={16} style={{color: '#D97706', marginLeft: '8px'}}/>
+                                            {person.name}
+                                        </div>
+                                    </td>
+                                    <td style={{
+                                        padding: '16px 12px',
+                                        fontSize: '14px',
+                                        color: '#6B7280'
+                                    }}>
+                                        <div style={{display: 'flex', alignItems: 'center'}}>
+                                            <School size={14} style={{color: '#9CA3AF', marginLeft: '6px'}}/>
+                                            {person.institution}
+                                        </div>
+                                    </td>
+                                    <td style={{
+                                        padding: '16px 12px',
+                                        textAlign: 'center'
+                                    }}>
                                             <span style={{
                                                 padding: '4px 12px',
                                                 borderRadius: '20px',
@@ -529,37 +560,37 @@ function MatchesTable() {
                                             }}>
                                                 {person.matched ? "שודך" : "פנוי"}
                                             </span>
-                                        </td>
-                                        <td style={{
-                                            padding: '16px 12px',
-                                            textAlign: 'center',
-                                            fontSize: '14px',
-                                            color: '#6B7280'
-                                        }}>
-                                            {person.type}
-                                        </td>
-                                        <td style={{
-                                            padding: '16px 12px',
-                                            textAlign: 'center'
-                                        }}>
-                                            <a
-                                                href={person.link}
-                                                style={detailsButtonStyle}
-                                                onMouseEnter={(e) => {
-                                                    e.target.style.backgroundColor = '#D97706';
-                                                    e.target.style.color = 'white';
-                                                }}
-                                                onMouseLeave={(e) => {
-                                                    e.target.style.backgroundColor = 'transparent';
-                                                    e.target.style.color = '#D97706';
-                                                }}
-                                            >
-                                                <Eye size={14} />
-                                                פרטים
-                                            </a>
-                                        </td>
-                                    </tr>
-                                ))}
+                                    </td>
+                                    <td style={{
+                                        padding: '16px 12px',
+                                        textAlign: 'center',
+                                        fontSize: '14px',
+                                        color: '#6B7280'
+                                    }}>
+                                        {person.type}
+                                    </td>
+                                    <td style={{
+                                        padding: '16px 12px',
+                                        textAlign: 'center'
+                                    }}>
+                                        <a
+                                            href={person.link}
+                                            style={detailsButtonStyle}
+                                            onMouseEnter={(e) => {
+                                                e.target.style.backgroundColor = '#D97706';
+                                                e.target.style.color = 'white';
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                e.target.style.backgroundColor = 'transparent';
+                                                e.target.style.color = '#D97706';
+                                            }}
+                                        >
+                                            <Eye size={14}/>
+                                            פרטים
+                                        </a>
+                                    </td>
+                                </tr>
+                            ))}
                             </tbody>
                         </table>
                     </div>
@@ -570,26 +601,26 @@ function MatchesTable() {
                             padding: '40px',
                             color: '#6B7280'
                         }}>
-                            <Search size={48} style={{ color: '#D1D5DB', marginBottom: '16px' }} />
-                            <p style={{ fontSize: '16px', margin: 0 }}>לא נמצאו תוצאות לחיפוש שלך</p>
-                            <p style={{ fontSize: '14px', margin: '8px 0 0 0' }}>נסה לשנות את הסינונים או החיפוש</p>
+                            <Search size={48} style={{color: '#D1D5DB', marginBottom: '16px'}}/>
+                            <p style={{fontSize: '16px', margin: 0}}>לא נמצאו תוצאות לחיפוש שלך</p>
+                            <p style={{fontSize: '14px', margin: '8px 0 0 0'}}>נסה לשנות את הסינונים או החיפוש</p>
                         </div>
                     )}
                 </div>
 
                 {/* Footer */}
-                <div style={{ marginTop: '48px', textAlign: 'center' }}>
+                <div style={{marginTop: '48px', textAlign: 'center'}}>
                     <div style={{
                         background: 'linear-gradient(to right, #FEF7CD, #FED7AA)',
                         borderRadius: '12px',
                         padding: '24px',
                         border: '1px solid #F3E8FF'
                     }}>
-                        <Heart style={{ width: '32px', height: '32px', color: '#D97706', margin: '0 auto 12px' }} />
-                        <p style={{ color: '#374151', fontSize: '18px', fontWeight: '500', margin: '0 0 8px 0' }}>
+                        <Heart style={{width: '32px', height: '32px', color: '#D97706', margin: '0 auto 12px'}}/>
+                        <p style={{color: '#374151', fontSize: '18px', fontWeight: '500', margin: '0 0 8px 0'}}>
                             "כל נשמה מוצאת את זוגה בזמן הנכון"
                         </p>
-                        <p style={{ color: '#6B7280', margin: 0 }}>Match Shtark - בינה מלאכותית עם נשמה יהודית</p>
+                        <p style={{color: '#6B7280', margin: 0}}>Match Shtark - בינה מלאכותית עם נשמה יהודית</p>
                     </div>
                 </div>
             </div>

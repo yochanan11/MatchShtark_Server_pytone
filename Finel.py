@@ -9,6 +9,7 @@ from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.metrics import accuracy_score, classification_report
 import matplotlib.pyplot as plt
 import shap
+import json
 
 # התחברות ל-MongoDB
 mongo_uri = "mongodb+srv://169921:TT4fIYdjqcsQ6xVl@cluster0.ls0mc.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
@@ -90,6 +91,15 @@ def train_or_load_model(force_train=False):
         save_model(best_model)
 
         # 🔍 גרפים
+        booster = best_model.get_booster()
+        scores = booster.get_score(importance_type='weight')
+        sorted_scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+        data = [{"feature": k, "importance": float(v)} for k, v in sorted_scores]
+
+        # ⬇️ שמירה לקובץ JSON
+        with open("feature_importance_data.json", "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+
         plt.figure(figsize=(10, 6))
         plot_importance(best_model, max_num_features=10)
         plt.title("🔝 Feature Importance (XGBoost)")

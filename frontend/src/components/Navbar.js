@@ -186,7 +186,7 @@ function Navbar() {
       <nav style={navbarStyle} dir="rtl">
         <div style={containerStyle}>
           {/* Logo */}
-          <Link to="/" style={logoStyle}>
+          <Link to="/dashboard" style={logoStyle}>
             <span>MATCH SHTARK</span>
           </Link>
 
